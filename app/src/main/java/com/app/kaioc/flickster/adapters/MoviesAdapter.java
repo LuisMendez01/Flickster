@@ -2,7 +2,11 @@ package com.app.kaioc.flickster.adapters;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,8 +16,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.app.kaioc.flickster.R;
+import com.app.kaioc.flickster.models.GlideApp;
 import com.app.kaioc.flickster.models.Movie;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 
 import java.util.List;
 
@@ -39,6 +48,8 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.viewHolder
     public void onBindViewHolder(@NonNull viewHolder viewHolder, int position) {
         Log.d("smile","onBindViewHolder: " + position);
         Movie movie = movies.get(position);
+
+        viewHolder.itemView.setBackgroundColor(ContextCompat.getColor(context,R.color.fav));
 
         //Bind the movie data into the view holder
         viewHolder.bind(movie);
@@ -74,7 +85,25 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.viewHolder
                 imageUrl = movie.getBackdropPath();
             }
 
-            Glide.with(context).load(imageUrl).into(ivPoster);
+            //Glide.with(context).load(imageUrl).into(ivPoster);
+            GlideApp.with(context)
+                    .load(imageUrl)
+                    .placeholder(R.drawable.placeholder)
+                    .error(R.drawable.imagenotfound)
+                    .listener(new RequestListener<Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            // log exception
+                            Log.e("TAG", "Error loading image", e);
+                            return false; // important to return false so the error placeholder can be placed
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            return false;
+                        }
+                    })
+                    .into(ivPoster);
         }
     }
 }
